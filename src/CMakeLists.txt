@@ -1,4 +1,5 @@
 
+include_directories(${PROJECT_HEADER_DIR})
 
 set(EXECUTABLE_OUTPUT_PATH ${EXE_PATH})
 
