@@ -2,7 +2,7 @@
  * @Author: LeiJiulong
  * @Date: 2024-12-22 16:22:49
  * @LastEditors: LeiJiulong && lei15557570906@outlook.com
- * @LastEditTime: 2024-12-22 17:48:47
+ * @LastEditTime: 2024-12-22 18:08:42
  * @Description:
  */
 #pragma once
@@ -20,27 +20,26 @@
 class CallObjDataField
 {
 public:
-    void operator()(const CThostFtdcDepthMarketDataField& ele)
-	{   
+    void operator()(const CThostFtdcDepthMarketDataField &ele)
+    {
         char filePath[100] = {'\0'};
-		sprintf(filePath, "%s.csv", ele.InstrumentID);
-        std::unique_ptr<std::ofstream, void(*)(std::ofstream *)> file_(new std::ofstream(filePath, std::ios::ate|std::ios::app), close_fp);
+        sprintf(filePath, "%s.csv", ele.InstrumentID);
+        std::unique_ptr<std::ofstream, void (*)(std::ofstream *)> file_(new std::ofstream(filePath, std::ios::ate | std::ios::app), close_fp);
         // 开始写入数据
-	}
+        *file_ << ele.InstrumentID << ","
+               << ele.UpdateTime << "." << ele.UpdateMillisec << ","
+               << ele.LastPrice << ","
+               << ele.Volume << ",";
+    }
     static void close_fp(std::ofstream *p)
     {
         // std::cout << "close" << std::endl;
-        if(p->is_open())
+        if (p->is_open())
             p->close();
     }
 };
 
-
-
-
 using WritePoolSingleton = WritePool<CThostFtdcDepthMarketDataField, CallObjDataField>;
-
-
 
 class CTPDataGet : public CThostFtdcMdSpi
 {
@@ -48,8 +47,8 @@ public:
     explicit CTPDataGet();
     ~CTPDataGet();
 
-    CTPDataGet& operator = (const CTPDataGet&) = delete;
-    CTPDataGet(const CTPDataGet&) = delete;
+    CTPDataGet &operator=(const CTPDataGet &) = delete;
+    CTPDataGet(const CTPDataGet &) = delete;
 
     void begin();
 
