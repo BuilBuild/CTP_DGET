@@ -2,13 +2,11 @@
  * @Author: LeiJiulong
  * @Date: 2024-12-22 16:59:44
  * @LastEditors: LeiJiulong && lei15557570906@outlook.com
- * @LastEditTime: 2024-12-22 17:13:25
+ * @LastEditTime: 2024-12-22 17:54:07
  * @Description: 
  * 
  */
 #include "CTPmd.h"
-#include<fstream>
-
 
 extern int iInstrumentID;
 extern char **ppInstrumentID ;
@@ -24,6 +22,7 @@ CTPDataGet::CTPDataGet()
 
 CTPDataGet::~CTPDataGet()
 {
+    WritePoolSingleton::DeleInstance();
 }
 
 void CTPDataGet::begin()
@@ -90,7 +89,13 @@ void CTPDataGet::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecific
 		std::cout << "合约代码： " << pSpecificInstrument->InstrumentID << std::endl;
 		// 如果需要存入文件或者数据库，在这里创建表头,不同的合约单独存储
 		char filePath[100] = {'\0'};
-		sprintf(filePath, "%s_market_data.csv", pSpecificInstrument->InstrumentID);
+		sprintf(filePath, "%s.csv", pSpecificInstrument->InstrumentID);
+        std::ifstream filefd(filePath);
+        if(filefd.good())
+        {
+            filefd.close();
+            return;
+        }
 		std::ofstream outFile;
 		outFile.open(filePath, std::ios::app); // 新开文件
 		outFile << "合约代码" << ","
@@ -140,42 +145,44 @@ void CTPDataGet::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecif
 void CTPDataGet::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
     char filePath[100] = {'\0'};
-	sprintf(filePath, "%s_market_data.csv", pDepthMarketData->InstrumentID);
-	std::ofstream outFile;
-	outFile.open(filePath, std::ios::app); // 文件追加写入 
-	outFile << pDepthMarketData->InstrumentID << "," 
-		<< pDepthMarketData->UpdateTime << "." << pDepthMarketData->UpdateMillisec << "," 
-		<< pDepthMarketData->LastPrice << "," 
-		<< pDepthMarketData->Volume << "," 
+	sprintf(filePath, "%s.csv", pDepthMarketData->InstrumentID);
+    auto write_instance = WritePoolSingleton::GetInstance();
+    write_instance->push(*pDepthMarketData);
+	// std::ofstream outFile;
+	// outFile.open(filePath, std::ios::app); // 文件追加写入 
+	// outFile << pDepthMarketData->InstrumentID << "," 
+	// 	<< pDepthMarketData->UpdateTime << "." << pDepthMarketData->UpdateMillisec << "," 
+	// 	<< pDepthMarketData->LastPrice << "," 
+	// 	<< pDepthMarketData->Volume << "," 
 
-		<< pDepthMarketData->BidPrice1 << "," 
-		<< pDepthMarketData->BidVolume1 << "," 
-		<< pDepthMarketData->AskPrice1 << "," 
-		<< pDepthMarketData->AskVolume1 << "," 
+	// 	<< pDepthMarketData->BidPrice1 << "," 
+	// 	<< pDepthMarketData->BidVolume1 << "," 
+	// 	<< pDepthMarketData->AskPrice1 << "," 
+	// 	<< pDepthMarketData->AskVolume1 << "," 
 
-		// << pDepthMarketData->BidPrice2 << "," 
-		// << pDepthMarketData->BidVolume2 << "," 
-		// << pDepthMarketData->AskPrice2 << "," 
-		// << pDepthMarketData->AskVolume2 << "," 
+	// 	// << pDepthMarketData->BidPrice2 << "," 
+	// 	// << pDepthMarketData->BidVolume2 << "," 
+	// 	// << pDepthMarketData->AskPrice2 << "," 
+	// 	// << pDepthMarketData->AskVolume2 << "," 
 
-		// << pDepthMarketData->BidPrice3 << "," 
-		// << pDepthMarketData->BidVolume3 << "," 
-		// << pDepthMarketData->AskPrice3 << "," 
-		// << pDepthMarketData->AskVolume3 << "," 
+	// 	// << pDepthMarketData->BidPrice3 << "," 
+	// 	// << pDepthMarketData->BidVolume3 << "," 
+	// 	// << pDepthMarketData->AskPrice3 << "," 
+	// 	// << pDepthMarketData->AskVolume3 << "," 
 
-		// << pDepthMarketData->BidPrice4 << "," 
-		// << pDepthMarketData->BidVolume4 << "," 
-		// << pDepthMarketData->AskPrice4 << "," 
-		// << pDepthMarketData->AskVolume4 << "," 
+	// 	// << pDepthMarketData->BidPrice4 << "," 
+	// 	// << pDepthMarketData->BidVolume4 << "," 
+	// 	// << pDepthMarketData->AskPrice4 << "," 
+	// 	// << pDepthMarketData->AskVolume4 << "," 
 
-		// << pDepthMarketData->BidPrice5 << "," 
-		// << pDepthMarketData->BidVolume5 << "," 
-		// << pDepthMarketData->AskPrice5 << "," 
-		// << pDepthMarketData->AskVolume5 << "," 
+	// 	// << pDepthMarketData->BidPrice5 << "," 
+	// 	// << pDepthMarketData->BidVolume5 << "," 
+	// 	// << pDepthMarketData->AskPrice5 << "," 
+	// 	// << pDepthMarketData->AskVolume5 << "," 
 
-		<< pDepthMarketData->OpenInterest << "," 
-		<< pDepthMarketData->Turnover << std::endl;
-	outFile.close();
+	// 	<< pDepthMarketData->OpenInterest << "," 
+	// 	<< pDepthMarketData->Turnover << std::endl;
+	// outFile.close();
 }
 
 void CTPDataGet::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)

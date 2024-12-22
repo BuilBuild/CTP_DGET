@@ -2,18 +2,43 @@
  * @Author: LeiJiulong
  * @Date: 2024-12-22 16:22:49
  * @LastEditors: LeiJiulong && lei15557570906@outlook.com
- * @LastEditTime: 2024-12-22 16:57:58
+ * @LastEditTime: 2024-12-22 17:48:47
  * @Description:
  */
 #pragma once
 
 #include <iostream>
+#include <fstream>
+#include <string>
 #include "SingleWritePool.hpp"
 #include "ThostFtdcMdApi.h"
 #include "ThostFtdcTraderApi.h"
 #include "ThostFtdcUserApiStruct.h"
 
-using MarketDataField = CThostFtdcDepthMarketDataField;
+// using MarketDataField = CThostFtdcDepthMarketDataField;
+
+class CallObjDataField
+{
+public:
+    void operator()(const CThostFtdcDepthMarketDataField& ele)
+	{   
+        char filePath[100] = {'\0'};
+		sprintf(filePath, "%s.csv", ele.InstrumentID);
+        std::unique_ptr<std::ofstream, void(*)(std::ofstream *)> file_(new std::ofstream(filePath, std::ios::ate|std::ios::app), close_fp);
+        // 开始写入数据
+	}
+    static void close_fp(std::ofstream *p)
+    {
+        // std::cout << "close" << std::endl;
+        if(p->is_open())
+            p->close();
+    }
+};
+
+
+
+
+using WritePoolSingleton = WritePool<CThostFtdcDepthMarketDataField, CallObjDataField>;
 
 
 
